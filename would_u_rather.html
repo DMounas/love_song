@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You ✿</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #fff0f5;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Static cute corner decorations */
+  body::before {
+    content: '🌸';
+    position: fixed; top: 18px; left: 20px;
+    font-size: 28px; opacity: 0.5; pointer-events: none;
+  }
+  body::after {
+    content: '🌸';
+    position: fixed; bottom: 18px; right: 20px;
+    font-size: 28px; opacity: 0.5; pointer-events: none;
+  }
+
+  /* Soft pastel blobs — static, no movement */
+  .blob {
+    position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 0;
+  }
+  .blob1 { width:320px; height:320px; background:radial-gradient(circle, rgba(255,182,213,0.25), transparent 70%); top:-60px; left:-60px; }
+  .blob2 { width:280px; height:280px; background:radial-gradient(circle, rgba(255,210,230,0.2), transparent 70%); bottom:-40px; right:-40px; }
+  .blob3 { width:200px; height:200px; background:radial-gradient(circle, rgba(253,220,235,0.18), transparent 70%); top:40%; left:50%; transform:translateX(-50%); }
+
+  /* Container */
+  .container {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 480px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .screen { width:100%; display:none; flex-direction:column; align-items:center; }
+  .screen.active { display:flex; }
+
+  /* ── INTRO ── */
+  .intro-emoji { font-size: 52px; margin-bottom: 16px; }
+
+  .intro-tag {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: #e88faf; margin-bottom: 10px;
+  }
+
+  .intro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 9vw, 68px);
+    font-style: italic; font-weight: 400;
+    color: #c4607a; text-align: center; line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .intro-sub {
+    font-size: 15px; color: #b07088;
+    text-align: center; line-height: 1.7;
+    max-width: 320px; margin-bottom: 32px;
+  }
+
+  .btn-start {
+    padding: 14px 48px;
+    background: linear-gradient(135deg, #f9a8c9, #e8708f);
+    color: white; border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(232,112,143,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,112,143,0.4); }
+  .btn-start:active { transform: translateY(0); }
+
+  /* ── GAME ── */
+  .progress-wrap { width: 100%; margin-bottom: 24px; }
+  .progress-meta { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .p-label { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#e88faf; }
+  .p-num   { font-size:13px; color:#c4809a; font-weight:600; }
+  .p-bar   { width:100%; height:6px; background:rgba(249,168,201,0.2); border-radius:10px; overflow:hidden; }
+  .p-fill  {
+    height:100%;
+    background: linear-gradient(90deg, #f9a8c9, #e8708f);
+    border-radius:10px;
+    transition: width 0.5s ease;
+  }
+
+  /* Question card */
+  .q-card {
+    width: 100%;
+    background: white;
+    border-radius: 24px;
+    padding: 32px 28px 28px;
+    box-shadow:
+      0 4px 6px rgba(232,112,143,0.06),
+      0 12px 32px rgba(232,112,143,0.1),
+      0 0 0 1px rgba(249,168,201,0.15);
+    margin-bottom: 20px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.4,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { opacity:0; transform: scale(0.94) translateY(16px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  .round-tag {
+    display: inline-block;
+    background: #fff0f5;
+    color: #e88faf;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(249,168,201,0.3);
+  }
+
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 400; font-style: italic;
+    color: #7a3a50; line-height: 1.65;
+    text-align: center; margin-bottom: 28px;
+  }
+
+  .choices { display:flex; flex-direction:column; gap:10px; }
+
+  .choice-btn {
+    width: 100%; padding: 15px 20px;
+    background: #fff7fa;
+    border: 1.5px solid rgba(249,168,201,0.35);
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px; font-weight: 500;
+    color: #8a4a60;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .choice-btn:hover {
+    background: #ffe8f2;
+    border-color: #f9a8c9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(249,168,201,0.25);
+  }
+  .choice-btn.selected {
+    background: linear-gradient(135deg, rgba(249,168,201,0.2), rgba(232,112,143,0.12));
+    border-color: #e8708f;
+    color: #c4607a;
+    box-shadow: 0 4px 14px rgba(232,112,143,0.15);
+  }
+
+  .or-tag {
+    text-align: center;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: #e8afc4; font-weight: 600;
+  }
+
+  /* ── RESULT ── */
+  .result-emoji { font-size: 48px; margin-bottom: 12px; }
+
+  .result-tag {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: #e88faf; margin-bottom: 10px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .score-pill {
+    background: white;
+    border: 1.5px solid rgba(249,168,201,0.4);
+    border-radius: 50px;
+    padding: 10px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(232,112,143,0.1);
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .score-pill span {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-style: italic;
+    color: #e8708f;
+  }
+  .score-pill small {
+    font-size: 13px; color: #c4809a; margin-left: 2px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 6vw, 36px);
+    font-style: italic; color: #7a3a50;
+    text-align: center; margin-bottom: 6px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+  .result-title b { color: #e8708f; font-weight: 400; }
+
+  .result-card {
+    width: 100%;
+    background: white;
+    border-radius: 24px;
+    padding: 28px 26px;
+    box-shadow:
+      0 4px 6px rgba(232,112,143,0.06),
+      0 12px 32px rgba(232,112,143,0.1),
+      0 0 0 1px rgba(249,168,201,0.15);
+    margin: 18px 0;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+
+  .result-msg {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 400; line-height: 1.85;
+    color: #7a4a60; text-align: center;
+  }
+  .result-msg em { font-style: italic; color: #e8708f; }
+
+  .btn-replay {
+    padding: 13px 40px;
+    background: white;
+    border: 1.5px solid #f9a8c9;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: #e8708f; cursor: pointer;
+    transition: all 0.2s ease;
+    animation: fadeUp 0.6s ease 0.6s both;
+    margin-top: 4px;
+  }
+  .btn-replay:hover {
+    background: linear-gradient(135deg, #f9a8c9, #e8708f);
+    color: white; border-color: transparent;
+    box-shadow: 0 6px 20px rgba(232,112,143,0.3);
+    transform: translateY(-2px);
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(14px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  @media(max-width:420px){
+    .q-card { padding:24px 18px 22px; }
+    .q-text { font-size:18px; }
+    .choice-btn { font-size:14px; padding:13px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="screen active" id="introScreen">
+    <div class="intro-emoji">💝</div>
+    <p class="intro-tag">A little game — just for you</p>
+    <h1 class="intro-title">Would You<br>Rather?</h1>
+    <p class="intro-sub">10 cute questions. No wrong answers.<br>Just follow your heart 🌸</p>
+    <button class="btn-start" onclick="startGame()">Let's Play 🌷</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="gameScreen">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="p-label">Question</span>
+        <span class="p-num" id="pNum">1 / 10</span>
+      </div>
+      <div class="p-bar"><div class="p-fill" id="pFill" style="width:10%"></div></div>
+    </div>
+
+    <div class="q-card" id="qCard">
+      <div class="round-tag" id="roundTag">Round 1</div>
+      <p class="q-text" id="qText"></p>
+      <div class="choices" id="choicesWrap"></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen">
+    <div class="result-emoji">🌸</div>
+    <p class="result-tag">Your result</p>
+    <div class="score-pill">
+      <span id="scoreNum">10</span><small>/ 10</small>
+    </div>
+    <h2 class="result-title" id="resultTitle">You are a <b>Dreamer</b></h2>
+    <div class="result-card">
+      <p class="result-msg" id="resultMsg"></p>
+    </div>
+    <button class="btn-replay" onclick="replayGame()">Play Again 🌷</button>
+  </div>
+
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "Would you rather receive surprise flowers at your door or a handwritten letter?",
+      a: "Surprise flowers 🌸", b: "Handwritten letter 💌"
+    },
+    {
+      q: "Would you rather stay up texting till 3am about everything and nothing, or have one long call that goes on forever?",
+      a: "Texting till 3am 💬", b: "Long call forever 🌙"
+    },
+    {
+      q: "Would you rather go on a quiet candlelight dinner or a fun spontaneous road trip?",
+      a: "Candlelight dinner 🕯️", b: "Spontaneous road trip 🚗"
+    },
+    {
+      q: "Would you rather be hugged from behind unexpectedly, or sit on someone's lap with faces close just looking at each other?",
+      a: "Hugged from behind 🤍", b: "Sitting close, eyes locked 🥹"
+    },
+    {
+      q: "Would you rather have someone remember your small details or give you big grand gestures?",
+      a: "Remember small details 🥹", b: "Big grand gestures 🎁"
+    },
+    {
+      q: "Would you rather cuddle and watch a movie all evening or sit and talk for hours?",
+      a: "Cuddle and movie 🎬", b: "Talk for hours 💬"
+    },
+    {
+      q: "Would you rather someone whisper something sweet in your ear, or send a late night text that makes you smile and go shy?",
+      a: "Whisper it to me 🫦", b: "That late night text 🌙"
+    },
+    {
+      q: "Would you rather someone cook your favourite food for you or take you to your favourite place?",
+      a: "Cook for me 🍜", b: "Take me there 🗺️"
+    },
+    {
+      q: "Would you rather fall asleep together on a call or say goodnight with a voice note?",
+      a: "Fall asleep on call 🌙", b: "Voice note goodnight 🎙️"
+    },
+    {
+      q: "Would you rather be loved quietly and deeply or loudly and proudly?",
+      a: "Quietly and deeply 🌊", b: "Loudly and proudly 🌟"
+    }
+  ];
+
+  const results = [
+    {
+      range: [0,3],
+      title: 'You are a <b>Free Spirit</b>',
+      emoji: '🦋',
+      msg: `You love the unexpected — <em>the spontaneous, the unplanned, the beautifully random.</em> You don't need grand gestures. You just need someone real who makes ordinary moments feel magical. That person is out there, paying attention. 🌸`
+    },
+    {
+      range: [4,6],
+      title: 'You are a <b>Gentle Soul</b>',
+      emoji: '🌷',
+      msg: `You love with warmth and softness. <em>You notice the small things — when someone remembers your favourite song or texts just to say they thought of you.</em> You don't need perfection. You need presence. And that's the most beautiful kind of love. 🌷`
+    },
+    {
+      range: [7,8],
+      title: 'You are a <b>Quiet Romantic</b>',
+      emoji: '💌',
+      msg: `You believe love should feel like a warm evening — <em>unhurried, soft, and full of meaning.</em> You fall for depth. For someone who truly listens. For the kind of connection that makes you feel seen without saying a word. That's rare — and so are you. 💌`
+    },
+    {
+      range: [9,10],
+      title: 'You are a <b>True Lover</b>',
+      emoji: '💝',
+      msg: `You give everything — <em>your time, your attention, your whole heart.</em> Love to you isn't just a feeling, it's a choice you make every single day. Whoever gets to be loved by you is incredibly lucky. Never lose that tenderness. 🌺`
+    }
+  ];
+
+  let current = 0, score = 0;
+
+  function startGame() {
+    current = 0; score = 0;
+    showScreen('gameScreen');
+    renderQ();
+  }
+
+  function renderQ() {
+    const q = questions[current];
+    document.getElementById('roundTag').textContent = `Round ${current+1}`;
+    document.getElementById('qText').textContent = q.q;
+    document.getElementById('pNum').textContent = `${current+1} / 10`;
+    document.getElementById('pFill').style.width = `${((current+1)/10)*100}%`;
+
+    const wrap = document.getElementById('choicesWrap');
+    wrap.innerHTML = '';
+
+    const btnA = document.createElement('button');
+    btnA.className = 'choice-btn';
+    btnA.textContent = q.a;
+    btnA.onclick = () => pick(btnA);
+    wrap.appendChild(btnA);
+
+    const or = document.createElement('div');
+    or.className = 'or-tag';
+    or.textContent = '— or —';
+    wrap.appendChild(or);
+
+    const btnB = document.createElement('button');
+    btnB.className = 'choice-btn';
+    btnB.textContent = q.b;
+    btnB.onclick = () => pick(btnB);
+    wrap.appendChild(btnB);
+
+    const card = document.getElementById('qCard');
+    card.style.animation = 'none';
+    void card.offsetWidth;
+    card.style.animation = 'popIn 0.4s cubic-bezier(0.34,1.4,0.64,1) both';
+  }
+
+  function pick(btn) {
+    document.querySelectorAll('.choice-btn').forEach(b => { b.onclick = null; });
+    btn.classList.add('selected');
+    score++;
+    setTimeout(() => {
+      current++;
+      if (current < questions.length) renderQ();
+      else showResult();
+    }, 550);
+  }
+
+  function showResult() {
+    showScreen('resultScreen');
+    document.getElementById('scoreNum').textContent = score;
+    let res = results[0];
+    for (const r of results) {
+      if (score >= r.range[0] && score <= r.range[1]) { res = r; break; }
+    }
+    document.querySelector('.result-emoji').textContent = res.emoji;
+    document.getElementById('resultTitle').innerHTML = res.title;
+    document.getElementById('resultMsg').innerHTML = res.msg;
+  }
+
+  function replayGame() { startGame(); }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

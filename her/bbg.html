@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BBG</title>
+<style>
+  :root{
+    --ink:#120008;
+    --maroon:#2a0512;
+    --hot:#ff2f78;
+    --gold:#e8b559;
+    --cream:#ffe9ec;
+    --line: rgba(255,233,236,0.18);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .heart-field{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:3;
+  }
+  .heart-field span{
+    position:absolute;
+    color:var(--hot);
+    opacity:.2;
+    font-family:Georgia, serif;
+    text-shadow:0 0 16px rgba(255,47,120,.35);
+    animation: heartFloat 9s ease-in-out infinite;
+  }
+  @keyframes heartFloat{
+    0%,100%{ transform:translate3d(0,0,0) rotate(-8deg); opacity:.12; }
+    50%{ transform:translate3d(10px,-18px,0) rotate(8deg); opacity:.3; }
+  }
+  section > *, footer{ position:relative; z-index:4; }
+  ::selection{background:var(--hot);color:var(--ink);}
+
+  h1,h2{
+    font-family: 'Baskerville', Georgia, serif;
+    font-weight:400;
+    margin:0;
+  }
+  .script{
+    font-family: 'Brush Script MT', 'Segoe Script', cursive;
+    color: var(--gold);
+  }
+  .quote{
+    font-style:italic;
+    color: var(--gold);
+    font-size:15px;
+    margin-top:14px;
+    opacity:.9;
+  }
+  .quote cite{
+    display:block;
+    font-style:normal;
+    font-size:11px;
+    letter-spacing:.03em;
+    color: rgba(232,181,89,.65);
+    margin-top:6px;
+  }
+
+  /* ---------- LOADER ---------- */
+  #loader{
+    position:fixed; inset:0; background:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:18px; z-index:999;
+    transition: opacity .8s ease, visibility .8s ease;
+  }
+  #loader.gone{opacity:0; visibility:hidden; pointer-events:none;}
+  .loader-heart{
+    font-size:42px;
+    animation: beat 1s ease-in-out infinite;
+  }
+  @keyframes beat{
+    0%,100%{transform:scale(1);}
+    30%{transform:scale(1.25);}
+  }
+  #loader p{
+    letter-spacing:.04em;
+    color: var(--gold);
+    font-style:italic;
+    font-size:15px;
+    opacity:.85;
+  }
+
+  section{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 90px 22px;
+    position:relative;
+  }
+
+  /* ---------- HERO ---------- */
+  #hero{
+    flex-direction:column;
+    text-align:center;
+    background: radial-gradient(circle at 30% 20%, var(--maroon), var(--ink) 65%);
+  }
+  #hero h1{
+    font-size: clamp(38px,8vw,84px);
+    line-height:1.05;
+  }
+  #hero .sub{
+    margin-top:16px;
+    font-size: clamp(16px,2.4vw,20px);
+    color:var(--gold);
+    font-style:italic;
+    max-width:520px;
+  }
+  .ph{ /* photo placeholder */
+    background: linear-gradient(135deg, rgba(255,47,120,.18), rgba(232,181,89,.12));
+    border:1px dashed var(--line);
+    color: rgba(255,233,236,.55);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; letter-spacing:.03em; text-align:center;
+    font-family: system-ui, sans-serif;
+    overflow:hidden;
+  }
+  .photo-frame,
+  .hero-photo,
+  .polaroid-photo,
+  .win-photo,
+  .corner-photo{
+    background-repeat:no-repeat;
+    background-size:cover;
+    background-position:center;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .hero-photo{
+    width:140px; height:180px; border-radius:6px;
+    transform: rotate(-6deg);
+    margin-top:34px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.5);
+  }
+
+  .corner-photo{
+    position:fixed;
+    width:90px; height:110px;
+    border-radius:6px;
+    box-shadow:0 10px 26px rgba(0,0,0,.5);
+    z-index:5;
+    pointer-events:none;
+    opacity:.9;
+    color: transparent;
+  }
+
+  /* ---------- SCROLL SECTIONS ---------- */
+  .story{
+    max-width:640px;
+    text-align:center;
+  }
+  .story h2{
+    font-size:clamp(26px,5vw,42px);
+    margin-bottom:18px;
+  }
+  .story p{
+    font-size:17px;
+    line-height:1.7;
+    color:rgba(255,233,236,.85);
+  }
+  .polaroid{
+    width:150px; height:190px;
+    padding:10px 10px 26px;
+    background:#fff1f3;
+    border-radius:2px;
+    box-shadow:0 20px 40px rgba(0,0,0,.55);
+    margin: 30px auto 0;
+  }
+  .polaroid .ph,
+  .polaroid-photo{width:100%;height:100%;}
+  .tilt-left{ transform:rotate(-7deg); }
+  .tilt-right{ transform:rotate(6deg); }
+
+  /* continuously moving carousel */
+  .carousel-viewport{
+    margin-top: 0;
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+  .carousel-track{
+    display:flex;
+    width:max-content;
+    gap:18px;
+    padding: 0 18px 6px;
+    animation: scrollRow 18s linear infinite;
+  }
+  .carousel-track img{
+    display:block;
+    width: min(32vw, 520px);
+    height: clamp(260px, 38vw, 620px);
+    object-fit: cover;
+    border-radius: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 18px 38px rgba(0,0,0,.45);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  @media (max-width: 700px){
+    .carousel-track img{
+      width: min(72vw, 420px);
+      height: clamp(280px, 80vw, 500px);
+    }
+  }
+  @keyframes scrollRow{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+
+  /* ---------- FLOATING DOODLES ---------- */
+  .doodle{
+    position:fixed;
+    font-size:26px;
+    z-index:20;
+    pointer-events:none;
+    animation: floatUp 3.2s ease-out forwards;
+    text-align:center;
+    font-family: system-ui, sans-serif;
+  }
+  .doodle span{
+    display:block;
+    margin-top:4px;
+    font-size:12px;
+    color: var(--gold);
+    background: rgba(20,0,10,.7);
+    padding:3px 8px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+  @keyframes floatUp{
+    0%{ transform: translateY(0) scale(.7); opacity:0; }
+    12%{ opacity:1; transform: translateY(-10px) scale(1); }
+    85%{ opacity:1; }
+    100%{ transform: translateY(-140px) scale(.9); opacity:0; }
+  }
+
+  /* ---------- PUZZLE GAME ---------- */
+  #game{
+    flex-direction:column;
+    background: linear-gradient(180deg, var(--ink), var(--maroon));
+  }
+  #game h2{ font-size:clamp(26px,5vw,40px); margin-bottom:6px; }
+  #game .hint{ color:var(--gold); font-style:italic; margin-bottom:26px; font-size:15px; text-align:center;}
+  #puzzle-wrap{ position:relative; }
+  #board{
+    width:300px; height:300px;
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    gap:3px;
+    background: rgba(255,255,255,.06);
+    border-radius:10px;
+    padding:3px;
+  }
+  .cell{
+    background: rgba(255,255,255,.05);
+    border:1px dashed var(--line);
+    border-radius:4px;
+    position:relative;
+    background-repeat:no-repeat;
+  }
+  .cell.filled{ border-style:solid; border-color:transparent; }
+  .cell.target-hint{ border-color: var(--gold); }
+  #tray{
+    display:grid;
+    grid-template-columns: repeat(4, 64px);
+    gap:10px; justify-content:center;
+    max-width:320px; margin-top:22px;
+  }
+  .piece{
+    width:64px; height:64px;
+    border-radius:8px;
+    cursor:pointer;
+    background-repeat:no-repeat;
+    box-shadow:0 8px 18px rgba(0,0,0,.4);
+    user-select:none;
+    border:2px solid transparent;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .piece:hover{ transform: translateY(-3px); }
+  .piece.selected{ border-color: var(--gold); transform: scale(1.06); }
+  .piece.placed{ visibility:hidden; }
+  #win-overlay{
+    position:absolute; inset:0;
+    display:none;
+    align-items:center; justify-content:center;
+    border-radius:10px;
+  }
+  #win-overlay.show{ display:flex; animation: sparkleIn .9s ease forwards; }
+  @keyframes sparkleIn{
+    0%{ transform:scale(.6); opacity:0; filter:brightness(3); }
+    60%{ transform:scale(1.05); opacity:1; filter:brightness(1.4);}
+    100%{ transform:scale(1); opacity:1; filter:brightness(1);}
+  }
+  #win-overlay .ph,
+  #win-overlay .win-photo{ width:100%; height:100%; border-radius:10px; font-size:15px; }
+  #win-overlay .win-photo.pig-reveal{
+    background-image:url("gallery/pig.png");
+    background-color:#ffe9ec;
+    background-size:contain;
+    background-position:center;
+    background-repeat:no-repeat;
+    border-color:rgba(255,233,236,.35);
+    animation:pigReveal .8s ease both;
+  }
+  @keyframes pigReveal{
+    0%{ opacity:0; transform:scale(.65) rotate(-8deg); filter:brightness(2); }
+    65%{ opacity:1; transform:scale(1.06) rotate(3deg); filter:brightness(1.1); }
+    100%{ opacity:1; transform:scale(1) rotate(0); filter:brightness(1); }
+  }
+  .sparkle{
+    position:absolute; font-size:20px; animation: sparklePop 1s ease forwards;
+  }
+  @keyframes sparklePop{
+    0%{ transform:scale(0) rotate(0deg); opacity:0;}
+    50%{ transform:scale(1.3) rotate(180deg); opacity:1;}
+    100%{ transform:scale(.4) rotate(360deg); opacity:0; translate: 0 -30px;}
+  }
+
+  /* ---------- FINALE ---------- */
+  #finale{
+    flex-direction:column;
+    text-align:center;
+    background: radial-gradient(circle at 50% 30%, var(--maroon), var(--ink) 70%);
+  }
+  #finale h2{ font-size:clamp(28px,6vw,46px); margin-bottom:36px; }
+  #dodge-zone{
+    position:relative;
+    width:100%; max-width:520px;
+    height:170px;
+  }
+  .btn{
+    padding:16px 30px;
+    border-radius:40px;
+    border:none;
+    font-family: Georgia, serif;
+    font-size:17px;
+    cursor:pointer;
+    position:absolute;
+  }
+  #yes-btn{
+    background: linear-gradient(135deg,var(--hot),#ff6f9c);
+    color:#fff;
+    box-shadow:0 12px 26px rgba(255,47,120,.4);
+    transition: transform .2s ease;
+    left:50%; top:20px; transform:translateX(-50%);
+  }
+  #yes-btn:hover{ transform: translateX(-50%) scale(1.08); }
+  #no-btn{
+    background: transparent;
+    border:1px solid var(--line);
+    color: rgba(255,233,236,.8);
+    transition: left .25s ease, top .25s ease;
+    left:50%; top:100px; transform:translateX(-50%);
+  }
+  #reveal{
+    margin-top:30px; font-size:20px; color:var(--gold); font-style:italic;
+    min-height:30px;
+  }
+
+  footer{
+    text-align:center; padding:40px 20px 60px;
+    font-size:13px; color:rgba(255,233,236,.4);
+  }
+
+  @media (max-width:600px){
+    .corner-photo{ width:66px; height:82px; }
+    #board{ width:250px; height:250px; }
+    #tray{ grid-template-columns: repeat(4, 54px); }
+    .piece{ width:54px; height:54px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+    .carousel-track{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-heart">🐷💗</div>
+  <p>fattening up something for BBG...</p>
+</div>
+
+<div class="heart-field" aria-hidden="true"></div>
+
+<div class="corner-photo photo-frame" style="top:14px; left:14px; transform:rotate(-8deg);"></div>
+<div class="corner-photo photo-frame" style="bottom:16px; right:14px; transform:rotate(7deg);"></div>
+
+<section id="hero">
+  <h1>hey <span class="script">BBG</span>.</h1>
+  <p class="sub">your bbeboy made you a whole website because apparently you're worth way more than a three-word text.</p>
+  <div class="photo-frame hero-photo"></div>
+</section>
+
+<section class="story">
+  <div>
+    <h2>Look what I got.</h2>
+    <p>out of every girl in the world, I somehow got the thick, hot, chaotic one and she somehow still finds time to call me bhenkalora with love in her voice.</p>
+    <p class="quote">"You are altogether beautiful, my darling; there is no flaw in you."<cite>— Song of Solomon 4:7</cite></p>
+    <div class="polaroid tilt-left"><div class="photo-frame polaroid-photo"></div></div>
+  </div>
+</section>
+
+<section class="story">
+  <div class="carousel-viewport">
+    <div class="carousel-track">
+      <img src="gallery/pic1.png" alt="BBG portrait 1">
+      <img src="gallery/pic2.png" alt="BBG portrait 2">
+      <img src="gallery/pic3.png" alt="BBG portrait 3">
+      <img src="gallery/pic4.png" alt="BBG portrait 4">
+      <img src="gallery/pic5.png" alt="BBG portrait 5">
+      <img src="gallery/pic1.png" alt="BBG portrait 1 repeat">
+      <img src="gallery/pic2.png" alt="BBG portrait 2 repeat">
+      <img src="gallery/pic3.png" alt="BBG portrait 3 repeat">
+      <img src="gallery/pic4.png" alt="BBG portrait 4 repeat">
+      <img src="gallery/pic5.png" alt="BBG portrait 5 repeat">
+    </div>
+  </div>
+</section>
+
+<section class="story">
+  <div>
+    <h2>i think i like our little differences.</h2>
+    <p>I'm the quiet one, you're the one with something to say about everything.
+and somehow, it works..</p>
+    <div class="polaroid tilt-right"><div class="photo-frame polaroid-photo" aria-label="BBG portrait"></div></div>
+  </div>
+</section>
+
+<section id="game">
+  <h2>okay but real talk</h2>
+  <p class="hint">tap a piece, then tap where it belongs. rebuild the smile.</p>
+  <div id="puzzle-wrap">
+    <div id="board"></div>
+    <div id="win-overlay"><div class="photo-frame win-photo" aria-label="BBG portrait"></div></div>
+  </div>
+  <div id="tray"></div>
+</section>
+
+<section id="finale">
+  <h2>so... did you like it?</h2>
+
+  <div id="dodge-zone">
+    <button id="yes-btn" class="btn">yes Bbeboy</button>
+    <button id="no-btn" class="btn">Chal nikal Bkl !</button>
+  </div>
+  <div id="reveal"></div>
+</section>
+
+<footer>made by your bbeboy, with too much time and too much love.</footer>
+
+<script>
+const galleryImages = [
+  'gallery/pic1.png',
+  'gallery/pic2.png',
+  'gallery/pic3.png',
+  'gallery/pic4.png',
+  'gallery/pic5.png'
+];
+
+function randomImage() {
+  return galleryImages[Math.floor(Math.random() * galleryImages.length)];
+}
+
+function setPhoto(el, src) {
+  if (!el) return;
+  el.style.backgroundImage = `url("${src}")`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  el.style.backgroundRepeat = 'no-repeat';
+}
+
+function initPhotoBackgrounds() {
+  const heroPhoto = document.querySelector('.hero-photo');
+  if (heroPhoto) setPhoto(heroPhoto, randomImage());
+
+  document.querySelectorAll('.corner-photo').forEach((photo) => {
+    setPhoto(photo, randomImage());
+  });
+
+  document.querySelectorAll('.polaroid-photo').forEach((photo) => {
+    setPhoto(photo, randomImage());
+  });
+}
+
+function initPuzzleGame() {
+  const board = document.getElementById('board');
+  const tray = document.getElementById('tray');
+  const winOverlay = document.getElementById('win-overlay');
+  if (!board || !tray || !winOverlay) return;
+
+  const selectedPuzzleImage = 'gallery/pic3.png';
+  const winPhoto = document.querySelector('.win-photo');
+  if (winPhoto) setPhoto(winPhoto, selectedPuzzleImage);
+
+  let placedCount = 0;
+  let selectedPiece = null;
+
+  function cellStyle(el, idx){
+    const row = Math.floor(idx/3), col = idx%3;
+    el.style.backgroundImage = `url("${selectedPuzzleImage}")`;
+    el.style.backgroundSize = '300% 300%';
+    el.style.backgroundRepeat = 'no-repeat';
+    el.style.backgroundPosition = (col*50) + '% ' + (row*50) + '%';
+  }
+
+  for(let i=0;i<9;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.index = i;
+    cell.addEventListener('click', () => onCellClick(cell));
+    board.appendChild(cell);
+  }
+
+  const order = [...Array(9).keys()].sort(() => Math.random()-0.5);
+  order.forEach(i => {
+    const p = document.createElement('div');
+    p.className = 'piece';
+    p.dataset.index = i;
+    cellStyle(p, i);
+    p.addEventListener('click', () => onPieceClick(p));
+    tray.appendChild(p);
+  });
+
+  function onPieceClick(p){
+    if(p.classList.contains('placed')) return;
+    if(selectedPiece === p){
+      p.classList.remove('selected');
+      selectedPiece = null;
+      return;
+    }
+    tray.querySelectorAll('.piece').forEach(el => el.classList.remove('selected'));
+    p.classList.add('selected');
+    selectedPiece = p;
+  }
+
+  function onCellClick(cell){
+    if(!selectedPiece) return;
+    if(cell.classList.contains('filled')) return;
+    if(cell.dataset.index !== selectedPiece.dataset.index){
+      cell.style.borderColor = '#ff2f78';
+      setTimeout(() => { cell.style.borderColor = ''; }, 350);
+      return;
+    }
+    cellStyle(cell, +cell.dataset.index);
+    cell.classList.add('filled');
+    selectedPiece.classList.add('placed');
+    selectedPiece.classList.remove('selected');
+    selectedPiece = null;
+    placedCount++;
+    if(placedCount === 9){
+      setTimeout(showWin, 400);
+    }
+  }
+
+  function showWin(){
+    const photo = winOverlay.querySelector('.win-photo');
+    if (photo) setPhoto(photo, selectedPuzzleImage);
+    winOverlay.classList.add('show');
+    for(let i=0;i<14;i++){
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = '✨';
+      s.style.left = Math.random()*100 + '%';
+      s.style.top = Math.random()*100 + '%';
+      s.style.animationDelay = (Math.random()*.4) + 's';
+      document.getElementById('puzzle-wrap').appendChild(s);
+      setTimeout(() => s.remove(), 1400);
+    }
+    setTimeout(() => {
+      if (!photo) return;
+      photo.classList.add('pig-reveal');
+      photo.style.backgroundImage = 'url("gallery/pig.png")';
+      photo.setAttribute('aria-label', 'Funny pig reveal');
+    }, 1400);
+  }
+}
+
+function initHeartField() {
+  const field = document.querySelector('.heart-field');
+  if (!field) return;
+  for (let i = 0; i < 42; i++) {
+    const heart = document.createElement('span');
+    heart.textContent = i % 5 === 0 ? '♥' : '♡';
+    heart.style.left = (Math.random() * 100) + '%';
+    heart.style.top = (Math.random() * 100) + '%';
+    heart.style.fontSize = (12 + Math.random() * 26) + 'px';
+    heart.style.animationDelay = (-Math.random() * 9) + 's';
+    heart.style.animationDuration = (7 + Math.random() * 7) + 's';
+    field.appendChild(heart);
+  }
+}
+
+function initDoodles() {
+  const doodles = [
+    {e:'🐽', t:'she said gahori > everything'},
+    {e:'💅', t:'buying outfits at light speed'},
+    {e:'🏋️‍♀️', t:'gym. every. single. day.'},
+    {e:'🚬', t:'takes a cig break, still elegant'},
+    {e:'👑', t:'costly woman, worth every rupee'},
+    {e:'😤', t:'mood swing incoming'},
+    {e:'🥹', t:'ok but she is SO pretty'},
+    {e:'🔥', t:'off-shoulder supremacy'}
+  ];
+
+  function spawnDoodle(){
+    const d = doodles[Math.floor(Math.random()*doodles.length)];
+    const el = document.createElement('div');
+    el.className = 'doodle';
+    el.innerHTML = d.e + '<span>' + d.t + '</span>';
+    el.style.left = (10 + Math.random()*75) + 'vw';
+    el.style.top = (20 + Math.random()*55) + 'vh';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+  setInterval(spawnDoodle, 4200);
+  setTimeout(spawnDoodle, 1800);
+}
+
+function initNoButton() {
+  const noBtn = document.getElementById('no-btn');
+  const yesBtn = document.getElementById('yes-btn');
+  const zone = document.getElementById('dodge-zone');
+  if (!noBtn || !yesBtn || !zone) return;
+
+  function dodgeNo(){
+    const zoneRect = zone.getBoundingClientRect();
+    const btnW = noBtn.offsetWidth, btnH = noBtn.offsetHeight;
+    const yesRect = yesBtn.getBoundingClientRect();
+    const maxX = Math.max(0, zoneRect.width - btnW);
+    const maxY = Math.max(0, zoneRect.height - btnH);
+    let x, y, tries = 0;
+    do{
+      x = Math.random()*maxX;
+      y = Math.random()*maxY;
+      tries++;
+      const candLeft = zoneRect.left + x, candTop = zoneRect.top + y;
+      const overlaps = candLeft < yesRect.right + 14 && candLeft + btnW > yesRect.left - 14 &&
+                        candTop < yesRect.bottom + 14 && candTop + btnH > yesRect.top - 14;
+      if(!overlaps || tries > 25) break;
+    } while(true);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    noBtn.style.transform = 'none';
+  }
+
+  noBtn.addEventListener('mouseenter', dodgeNo);
+  noBtn.addEventListener('click', function(e){ e.preventDefault(); dodgeNo(); });
+  noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); dodgeNo(); }, {passive:false});
+
+  yesBtn.addEventListener('click', () => {
+    document.getElementById('reveal').textContent = "yes, i really built all this for you. you better be impressed.";
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const l = document.getElementById('loader');
+  if (l) setTimeout(() => l.classList.add('gone'), 5000);
+
+  initPhotoBackgrounds();
+  initHeartField();
+  initDoodles();
+  initPuzzleGame();
+  initNoButton();
+});
+</script>
+
+</body>
+</html>

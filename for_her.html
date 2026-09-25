@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Nibedita ✿</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blush:    #fde8e8;
+    --rose:     #f0a8a8;
+    --deep:     #c97070;
+    --choco:    #7b4f3a;
+    --cream:    #fff8f4;
+    --text:     #4a2e2e;
+    --soft:     #a06060;
+    --gold:     #e8c49a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Cursor */
+  .cursor      { width:10px; height:10px; background:var(--deep); border-radius:50%; position:fixed; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; mix-blend-mode:multiply; }
+  .cursor-ring { width:32px; height:32px; border:1.5px solid var(--rose); border-radius:50%; position:fixed; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:left .15s ease,top .15s ease; }
+
+  /* Ambient background */
+  .ambient {
+    position: fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(253,220,210,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(240,168,168,0.2) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,248,244,1) 0%, transparent 80%);
+  }
+
+  /* Floating symbols */
+  .float-sym {
+    position: fixed; pointer-events:none; font-size:13px;
+    animation: floatSym ease-in-out infinite; opacity:0.25; z-index:0;
+  }
+  @keyframes floatSym {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-14px) rotate(12deg); }
+  }
+
+  /* Page */
+  .page {
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding: 56px 24px 90px;
+    gap: 0;
+  }
+
+  /* Top label */
+  .top-label {
+    font-size:10px; letter-spacing:4px; text-transform:uppercase;
+    color:var(--rose); margin-bottom:14px;
+    opacity:0; animation: fadeUp 1s ease 0.2s forwards;
+  }
+
+  /* Title */
+  .title {
+    font-family:'Playfair Display', serif;
+    font-size: clamp(50px,10vw,88px);
+    font-weight:400; font-style:italic;
+    color:var(--text); line-height:1; text-align:center;
+    opacity:0; animation: fadeUp 1.2s ease 0.4s forwards;
+  }
+  .title span { color:var(--deep); }
+
+  /* Divider */
+  .divider {
+    display:flex; align-items:center; gap:10px;
+    margin: 28px 0 36px;
+    opacity:0; animation: fadeUp 1s ease 0.7s forwards;
+  }
+  .dl { width:50px; height:1px; background:linear-gradient(90deg,transparent,var(--rose)); }
+  .dr { width:50px; height:1px; background:linear-gradient(90deg,var(--rose),transparent); }
+  .dd { width:5px; height:5px; background:var(--rose); border-radius:50%; }
+
+  /* Gift section */
+  .gifts-row {
+    display:flex; gap:28px; justify-content:center; flex-wrap:wrap;
+    margin-bottom: 44px;
+    opacity:0; animation: fadeUp 1.2s ease 1s forwards;
+  }
+
+  .gift-item {
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    cursor:default;
+  }
+
+  .gift-box {
+    width:110px; height:110px;
+    background:white;
+    border:1px solid rgba(240,168,168,0.35);
+    border-radius:16px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 4px 20px rgba(196,112,112,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position:relative; overflow:hidden;
+  }
+  .gift-box::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.6), transparent 70%);
+  }
+  .gift-box:hover {
+    transform: translateY(-6px) rotate(2deg);
+    box-shadow: 0 12px 32px rgba(196,112,112,0.18);
+  }
+
+  /* Bouquet SVG inside box */
+  .bouquet-mini svg { width:70px; height:70px; }
+
+  /* Chocolate box */
+  .choco-wrap {
+    position:relative;
+    width:64px; height:58px;
+  }
+  .choco-box {
+    width:64px; height:42px;
+    background:linear-gradient(135deg, #8b5a3a, #6b3f28);
+    border-radius:6px;
+    position:absolute; bottom:0;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.15);
+  }
+  .choco-lid {
+    width:70px; height:16px;
+    background:linear-gradient(135deg, #a06840, #7a4e30);
+    border-radius:6px 6px 0 0;
+    position:absolute; top:0; left:-3px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.2);
+  }
+  .choco-ribbon-h {
+    position:absolute; top:16px; left:0; right:0; height:3px;
+    background:var(--rose); z-index:2;
+  }
+  .choco-ribbon-v {
+    position:absolute; top:0; left:50%; transform:translateX(-50%); width:3px; height:100%;
+    background:var(--rose); z-index:2;
+  }
+  .choco-bow {
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+    font-size:16px; z-index:3;
+  }
+  .choco-pieces {
+    position:absolute; bottom:6px; left:50%; transform:translateX(-50%);
+    display:flex; gap:3px;
+  }
+  .cp {
+    width:12px; height:10px;
+    background:linear-gradient(135deg,#5c3020,#3e1e10);
+    border-radius:2px;
+  }
+
+  /* Teddy */
+  .teddy-wrap { font-size:52px; line-height:1; animation: teddyBob 3s ease-in-out infinite; }
+  @keyframes teddyBob {
+    0%,100% { transform:rotate(-4deg); }
+    50%      { transform:rotate(4deg); }
+  }
+
+  /* Gift labels */
+  .gift-label {
+    font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--soft); font-family:'DM Sans',sans-serif;
+  }
+
+  /* Note card */
+  .note-card {
+    max-width:500px; width:100%;
+    background:white;
+    border:1px solid rgba(240,168,168,0.28);
+    border-radius:3px;
+    padding:46px 42px;
+    position:relative;
+    box-shadow: 0 4px 40px rgba(196,112,112,0.07), 0 1px 3px rgba(196,112,112,0.08);
+    opacity:0; animation: fadeUp 1.2s ease 2.2s forwards;
+  }
+  .note-card::before { content:'✿'; position:absolute; top:14px; left:16px; color:var(--rose); opacity:0.5; font-size:14px; }
+  .note-card::after  { content:'✿'; position:absolute; bottom:14px; right:16px; color:var(--rose); opacity:0.5; font-size:14px; }
+
+  .note-to {
+    font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    color:var(--rose); margin-bottom:22px;
+  }
+
+  .note-body {
+    font-family:'Playfair Display', serif;
+    font-size:19px; font-weight:400; line-height:1.9;
+    color:var(--text);
+  }
+  .note-body em { font-style:italic; color:var(--deep); }
+  .note-body p + p { margin-top:18px; }
+
+  .note-sig {
+    margin-top:30px;
+    display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+  }
+  .sig-line { width:44px; height:1px; background:var(--rose); margin-bottom:6px; }
+  .sig-name {
+    font-family:'Playfair Display', serif;
+    font-size:14px; font-style:italic; color:var(--soft); letter-spacing:1px;
+  }
+
+  /* Neet encouragement tag */
+  .neet-tag {
+    margin-top: 36px;
+    padding: 18px 30px;
+    background: linear-gradient(135deg, rgba(253,232,232,0.8), rgba(255,248,244,0.9));
+    border: 1px solid rgba(240,168,168,0.3);
+    border-radius: 40px;
+    text-align:center;
+    max-width:420px; width:100%;
+    opacity:0; animation: fadeUp 1s ease 3.2s forwards;
+  }
+  .neet-tag p {
+    font-family:'Playfair Display', serif;
+    font-size:15px; font-style:italic;
+    color:var(--soft); line-height:1.7;
+  }
+  .neet-tag span { color:var(--deep); font-weight:500; }
+
+  /* Footer */
+  .footer {
+    margin-top:40px;
+    font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    color:var(--rose); opacity:0;
+    animation: fadeUp 1s ease 3.6s forwards;
+  }
+
+  /* Falling petals */
+  .falling { position:fixed; pointer-events:none; animation:fall linear forwards; z-index:0; opacity:0; font-size:11px; }
+  @keyframes fall {
+    0%   { transform:translateY(-20px) rotate(0deg); opacity:0; }
+    10%  { opacity:0.5; }
+    90%  { opacity:0.3; }
+    100% { transform:translateY(100vh) rotate(400deg); opacity:0; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(22px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Bloom animations for bouquet petals */
+  .bloom { transform-origin:center; animation:bloom 1.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .bloom:nth-child(1) { animation-delay:1.2s; }
+  .bloom:nth-child(2) { animation-delay:1.4s; }
+  .bloom:nth-child(3) { animation-delay:1.6s; }
+  .bloom:nth-child(4) { animation-delay:1.8s; }
+  .bloom:nth-child(5) { animation-delay:2.0s; }
+  @keyframes bloom {
+    0%   { transform:scale(0); opacity:0; }
+    100% { transform:scale(1); opacity:1; }
+  }
+
+  @media(max-width:480px){
+    .note-card { padding:32px 24px; }
+    .note-body { font-size:17px; }
+    .gifts-row { gap:18px; }
+    .gift-box  { width:90px; height:90px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
+<div class="ambient"></div>
+
+<!-- Floating symbols -->
+<div class="float-sym" style="top:8%;left:6%;animation-duration:5s;">✿</div>
+<div class="float-sym" style="top:15%;right:8%;animation-duration:6s;animation-delay:1s;">❀</div>
+<div class="float-sym" style="top:60%;left:4%;animation-duration:7s;animation-delay:2s;">🌸</div>
+<div class="float-sym" style="top:70%;right:5%;animation-duration:5.5s;animation-delay:0.5s;">✾</div>
+<div class="float-sym" style="top:40%;left:3%;animation-duration:8s;animation-delay:3s;">❀</div>
+
+<div class="page">
+
+  <p class="top-label">Something just for you</p>
+
+  <h1 class="title">For <span>Nibedita</span></h1>
+
+  <div class="divider">
+    <div class="dl"></div><div class="dd"></div><div class="dr"></div>
+  </div>
+
+  <!-- Three gifts -->
+  <div class="gifts-row">
+
+    <!-- Bouquet -->
+    <div class="gift-item">
+      <div class="gift-box bouquet-mini">
+        <svg viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- stems -->
+          <path d="M35 68 Q34 55 32 44" stroke="#9cb89c" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M35 68 Q36 56 39 46" stroke="#9cb89c" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M35 68 Q29 57 26 48" stroke="#9cb89c" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- leaves -->
+          <path d="M31 56 Q24 50 26 44 Q31 51 31 56Z" fill="#b5d4b5" opacity="0.8"/>
+          <path d="M38 57 Q45 51 43 45 Q38 52 38 57Z" fill="#b5d4b5" opacity="0.8"/>
+          <!-- ribbon -->
+          <path d="M28 63 Q35 60 42 63 Q39 67 35 68 Q31 67 28 63Z" fill="#f7b8c4" opacity="0.9"/>
+          <!-- center rose -->
+          <g class="bloom">
+            <ellipse cx="35" cy="28" rx="7" ry="9" fill="#f0a0a8" opacity="0.9"/>
+            <ellipse cx="42" cy="33" rx="7" ry="9" fill="#e8909a" opacity="0.9" transform="rotate(72 42 33)"/>
+            <ellipse cx="39" cy="42" rx="7" ry="9" fill="#f0a0a8" opacity="0.9" transform="rotate(144 39 42)"/>
+            <ellipse cx="31" cy="42" rx="7" ry="9" fill="#e8909a" opacity="0.9" transform="rotate(216 31 42)"/>
+            <ellipse cx="28" cy="33" rx="7" ry="9" fill="#f0a0a8" opacity="0.9" transform="rotate(288 28 33)"/>
+            <circle cx="35" cy="35" r="6" fill="#e87888"/>
+            <circle cx="35" cy="35" r="3" fill="#c04858"/>
+          </g>
+          <!-- left bud -->
+          <g class="bloom">
+            <ellipse cx="20" cy="38" rx="5" ry="6" fill="#fcd8d8" opacity="0.9"/>
+            <ellipse cx="25" cy="41" rx="5" ry="6" fill="#f8c0c8" opacity="0.9" transform="rotate(72 25 41)"/>
+            <ellipse cx="23" cy="47" rx="5" ry="6" fill="#fcd8d8" opacity="0.9" transform="rotate(144 23 47)"/>
+            <ellipse cx="17" cy="47" rx="5" ry="6" fill="#f8c0c8" opacity="0.9" transform="rotate(216 17 47)"/>
+            <ellipse cx="15" cy="41" rx="5" ry="6" fill="#fcd8d8" opacity="0.9" transform="rotate(288 15 41)"/>
+            <circle cx="20" cy="43" r="4" fill="#efa0a8"/>
+            <circle cx="20" cy="43" r="2" fill="#e08090"/>
+          </g>
+          <!-- right bud -->
+          <g class="bloom">
+            <ellipse cx="50" cy="38" rx="5" ry="6" fill="#fcd8d8" opacity="0.9"/>
+            <ellipse cx="55" cy="41" rx="5" ry="6" fill="#f8c0c8" opacity="0.9" transform="rotate(72 55 41)"/>
+            <ellipse cx="53" cy="47" rx="5" ry="6" fill="#fcd8d8" opacity="0.9" transform="rotate(144 53 47)"/>
+            <ellipse cx="47" cy="47" rx="5" ry="6" fill="#f8c0c8" opacity="0.9" transform="rotate(216 47 47)"/>
+            <ellipse cx="45" cy="41" rx="5" ry="6" fill="#fcd8d8" opacity="0.9" transform="rotate(288 45 41)"/>
+            <circle cx="50" cy="43" r="4" fill="#efa0a8"/>
+            <circle cx="50" cy="43" r="2" fill="#e08090"/>
+          </g>
+          <!-- baby's breath -->
+          <circle cx="12" cy="32" r="2.5" fill="#fce8e8" opacity="0.7"/>
+          <circle cx="8"  cy="27" r="2"   fill="#fce8e8" opacity="0.7"/>
+          <circle cx="16" cy="26" r="2"   fill="#fce8e8" opacity="0.7"/>
+          <circle cx="58" cy="32" r="2.5" fill="#fce8e8" opacity="0.7"/>
+          <circle cx="62" cy="27" r="2"   fill="#fce8e8" opacity="0.7"/>
+          <circle cx="54" cy="26" r="2"   fill="#fce8e8" opacity="0.7"/>
+          <circle cx="35" cy="18" r="2"   fill="#fce8e8" opacity="0.7"/>
+          <circle cx="30" cy="15" r="1.5" fill="#fce8e8" opacity="0.7"/>
+          <circle cx="40" cy="15" r="1.5" fill="#fce8e8" opacity="0.7"/>
+        </svg>
+      </div>
+      <span class="gift-label">Flowers</span>
+    </div>
+
+    <!-- Chocolates -->
+    <div class="gift-item">
+      <div class="gift-box">
+        <div class="choco-wrap">
+          <div class="choco-lid"></div>
+          <div class="choco-ribbon-v"></div>
+          <div class="choco-box">
+            <div class="choco-ribbon-h"></div>
+            <div class="choco-pieces">
+              <div class="cp"></div>
+              <div class="cp"></div>
+              <div class="cp"></div>
+            </div>
+          </div>
+          <div class="choco-bow">🎀</div>
+        </div>
+      </div>
+      <span class="gift-label">Chocolates</span>
+    </div>
+
+    <!-- Teddy -->
+    <div class="gift-item">
+      <div class="gift-box">
+        <div class="teddy-wrap">🧸</div>
+      </div>
+      <span class="gift-label">A little hug</span>
+    </div>
+
+  </div>
+
+  <!-- Note card -->
+  <div class="note-card">
+    <p class="note-to">A little note — just for Nibedita</p>
+    <div class="note-body">
+      <p>Hey Nibedita,</p>
+      <p>I know I can't hand these to you in person right now — so I built this instead. Because you deserve flowers, chocolates, and a teddy bear, <em>even if they have to live on a screen for now.</em></p>
+      <p>There's something about talking to you that feels easy and warm — like I've known you longer than I actually have. And I'm not complaining about that one bit.</p>
+      <p>You're working so hard for something that matters, and honestly that makes you <em>so much more beautiful</em> to me. The dedication, the focus, all of it.</p>
+      <p>I just wanted you to know — <em>someone out there is rooting for you.</em> For your dreams, your smile, and whatever comes next. 🌸</p>
+    </div>
+    <div class="note-sig">
+      <div class="sig-line"></div>
+      <span class="sig-name">Yours, always rooting ✦</span>
+    </div>
+  </div>
+
+  <!-- NEET encouragement -->
+  <div class="neet-tag">
+    <p>Future <span>Dr. Nibedita Routh</span> —<br>the world doesn't know yet, but it will. 🩺✨</p>
+  </div>
+
+  <p class="footer">Made with care — from someone who means it ✿</p>
+
+</div>
+
+<script>
+  // Cursor
+  const cur = document.getElementById('cur');
+  const curR = document.getElementById('curR');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+  (function anim(){
+    cur.style.left=mx+'px'; cur.style.top=my+'px';
+    rx+=(mx-rx)*0.13; ry+=(my-ry)*0.13;
+    curR.style.left=rx+'px'; curR.style.top=ry+'px';
+    requestAnimationFrame(anim);
+  })();
+
+  // Falling petals
+  const syms = ['🌸','✿','❀','✾','🌺'];
+  function spawnPetal(){
+    const p = document.createElement('div');
+    p.className = 'falling';
+    p.textContent = syms[Math.floor(Math.random()*syms.length)];
+    p.style.left = Math.random()*100+'vw';
+    const dur = 7+Math.random()*7;
+    p.style.animation = `fall ${dur}s linear forwards`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), dur*1000);
+  }
+  setInterval(spawnPetal, 1600);
+  spawnPetal();
+
+  // Gift box hover sparkle
+  document.querySelectorAll('.gift-box').forEach(box=>{
+    box.addEventListener('mouseenter', ()=>{
+      const spark = document.createElement('div');
+      spark.textContent = '✨';
+      spark.style.cssText = `position:absolute;font-size:16px;top:-10px;right:-6px;pointer-events:none;animation:fall 1.5s linear forwards;z-index:10;`;
+      box.style.position='relative';
+      box.appendChild(spark);
+      setTimeout(()=>spark.remove(),1500);
+    });
+  });
+</script>
+</body>
+</html>
